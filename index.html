@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformer架构图 - 原图还原版</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem 2rem;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid #ddd;
+            margin-top: 4rem;
+            background: #fff;
+        }
+
+        .footer-text {
+            font-style: italic;
+        }
+    </style>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f0f0f0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .controls {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+            font-size: 13px;
+        }
+
+        .control-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .control-group input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .btn-secondary {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #0b7dda;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .diagram-wrapper {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+        }
+
+        #diagram {
+            background: white;
+            position: relative;
+            width: 800px;
+            height: 1000px;
+        }
+
+        .box {
+            position: absolute;
+            border: 2.5px solid #000;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 500;
+            padding: 8px;
+            line-height: 1.25;
+        }
+
+        .softmax { background: #c8e6c9; }
+        .linear { background: #e1e1f7; }
+        .add-norm { background: #fff9c4; }
+        .feedforward { background: #b3e5fc; }
+        .attention { background: #ffcc80; }
+        .embedding { background: #f8bbd0; }
+
+        .block-outline {
+            position: absolute;
+            border: 2.5px solid #000;
+            border-radius: 12px;
+            background: transparent;
+        }
+
+        .label {
+            position: absolute;
+            font-size: 16px;
+            font-weight: 600;
+            color: #000;
+        }
+
+        .small-label {
+            position: absolute;
+            font-size: 13px;
+            font-weight: 500;
+            color: #000;
+        }
+
+        .nx-label {
+            position: absolute;
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .pos-encoding {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .pos-circle {
+            width: 35px;
+            height: 35px;
+            border: 2.5px solid #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            font-size: 18px;
+        }
+
+        .plus-symbol {
+            position: absolute;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="controls">
+            <h2 style="margin-bottom: 20px; color: #333;">🎨 Transformer架构图编辑器（原图还原版）</h2>
+            
+            <div class="control-grid">
+                <div class="control-group">
+                    <label>Output Probabilities:</label>
+                    <input type="text" id="topLabel" value="Output Probabilities">
+                </div>
+                <div class="control-group">
+                    <label>Softmax:</label>
+                    <input type="text" id="softmax" value="Softmax">
+                </div>
+                <div class="control-group">
+                    <label>Linear:</label>
+                    <input type="text" id="linear" value="Linear">
+                </div>
+                <div class="control-group">
+                    <label>Add & Norm (右上):</label>
+                    <input type="text" id="addNorm1" value="Add & Norm">
+                </div>
+                <div class="control-group">
+                    <label>Feed Forward (右上):</label>
+                    <input type="text" id="feedForward1" value="Feed Forward">
+                </div>
+                <div class="control-group">
+                    <label>Add & Norm (右中):</label>
+                    <input type="text" id="addNorm2" value="Add & Norm">
+                </div>
+                <div class="control-group">
+                    <label>Multi-Head Attention (右中):</label>
+                    <input type="text" id="attention1" value="Multi-Head Attention">
+                </div>
+                <div class="control-group">
+                    <label>Add & Norm (右下):</label>
+                    <input type="text" id="addNorm3" value="Add & Norm">
+                </div>
+                <div class="control-group">
+                    <label>Masked Multi-Head Attention:</label>
+                    <input type="text" id="maskedAttention" value="Masked Multi-Head Attention">
+                </div>
+                <div class="control-group">
+                    <label>Add & Norm (左上):</label>
+                    <input type="text" id="addNorm4" value="Add & Norm">
+                </div>
+                <div class="control-group">
+                    <label>Feed Forward (左):</label>
+                    <input type="text" id="feedForward2" value="Feed Forward">
+                </div>
+                <div class="control-group">
+                    <label>Add & Norm (左下):</label>
+                    <input type="text" id="addNorm5" value="Add & Norm">
+                </div>
+                <div class="control-group">
+                    <label>Multi-Head Attention (左):</label>
+                    <input type="text" id="attention2" value="Multi-Head Attention">
+                </div>
+                <div class="control-group">
+                    <label>Input Embedding:</label>
+                    <input type="text" id="inputEmbed" value="Input Embedding">
+                </div>
+                <div class="control-group">
+                    <label>Output Embedding:</label>
+                    <input type="text" id="outputEmbed" value="Output Embedding">
+                </div>
+                <div class="control-group">
+                    <label>Inputs:</label>
+                    <input type="text" id="inputs" value="Inputs">
+                </div>
+                <div class="control-group">
+                    <label>Outputs:</label>
+                    <input type="text" id="outputs" value="Outputs">
+                </div>
+                <div class="control-group">
+                    <label>Outputs 副标题:</label>
+                    <input type="text" id="outputsSub" value="(shifted right)">
+                </div>
+                <div class="control-group">
+                    <label>Positional Encoding:</label>
+                    <input type="text" id="posEncoding" value="Positional Encoding">
+                </div>
+                <div class="control-group">
+                    <label>N× (左):</label>
+                    <input type="text" id="nx1" value="N×">
+                </div>
+                <div class="control-group">
+                    <label>N× (右):</label>
+                    <input type="text" id="nx2" value="N×">
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <button class="btn btn-primary" onclick="updateDiagram()">🔄 更新图表</button>
+                <button class="btn btn-secondary" onclick="exportPNG()">📥 导出PNG</button>
+                <button class="btn btn-secondary" onclick="exportJPEG()">📥 导出JPEG</button>
+                <button class="btn btn-secondary" onclick="exportPDF()">📥 导出PDF</button>
+                <button class="btn btn-secondary" onclick="exportSVG()">📥 导出SVG</button>
+            </div>
+        </div>
+
+        <div class="diagram-wrapper">
+            <div id="diagram"></div>
+        </div>
+    </div>
+
+    <script>
+        function createDiagram() {
+            const diagram = document.getElementById('diagram');
+            diagram.innerHTML = '';
+
+            // 创建SVG层
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', '800');
+            svg.setAttribute('height', '1000');
+            svg.style.position = 'absolute';
+            svg.style.top = '0';
+            svg.style.left = '0';
+            svg.style.pointerEvents = 'none';
+            
+            // 箭头标记
+            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+            marker.setAttribute('id', 'arrowhead');
+            marker.setAttribute('markerWidth', '10');
+            marker.setAttribute('markerHeight', '10');
+            marker.setAttribute('refX', '9');
+            marker.setAttribute('refY', '3');
+            marker.setAttribute('orient', 'auto');
+            const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            polygon.setAttribute('points', '0 0, 10 3, 0 6');
+            polygon.setAttribute('fill', '#000');
+            marker.appendChild(polygon);
+            defs.appendChild(marker);
+            svg.appendChild(defs);
+
+            // 创建盒子
+            function createBox(text, x, y, w, h, className) {
+                const box = document.createElement('div');
+                box.className = `box ${className}`;
+                box.style.left = x + 'px';
+                box.style.top = y + 'px';
+                box.style.width = w + 'px';
+                box.style.height = h + 'px';
+                box.innerHTML = text.replace(/\n/g, '<br>');
+                return box;
+            }
+
+            // 绘制直线箭头
+            function drawArrow(x1, y1, x2, y2) {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', x1);
+                line.setAttribute('y1', y1);
+                line.setAttribute('x2', x2);
+                line.setAttribute('y2', y2);
+                line.setAttribute('stroke', '#000');
+                line.setAttribute('stroke-width', '2.5');
+                line.setAttribute('marker-end', 'url(#arrowhead)');
+                svg.appendChild(line);
+            }
+
+            // 绘制路径
+            function drawPath(d, hasArrow = true) {
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', d);
+                path.setAttribute('stroke', '#000');
+                path.setAttribute('stroke-width', '2.5');
+                path.setAttribute('fill', 'none');
+                if (hasArrow) {
+                    path.setAttribute('marker-end', 'url(#arrowhead)');
+                }
+                svg.appendChild(path);
+            }
+
+            // 获取值
+            const v = {
+                topLabel: document.getElementById('topLabel').value,
+                softmax: document.getElementById('softmax').value,
+                linear: document.getElementById('linear').value,
+                addNorm1: document.getElementById('addNorm1').value,
+                feedForward1: document.getElementById('feedForward1').value,
+                addNorm2: document.getElementById('addNorm2').value,
+                attention1: document.getElementById('attention1').value,
+                addNorm3: document.getElementById('addNorm3').value,
+                maskedAttention: document.getElementById('maskedAttention').value,
+                addNorm4: document.getElementById('addNorm4').value,
+                feedForward2: document.getElementById('feedForward2').value,
+                addNorm5: document.getElementById('addNorm5').value,
+                attention2: document.getElementById('attention2').value,
+                inputEmbed: document.getElementById('inputEmbed').value,
+                outputEmbed: document.getElementById('outputEmbed').value,
+                inputs: document.getElementById('inputs').value,
+                outputs: document.getElementById('outputs').value,
+                outputsSub: document.getElementById('outputsSub').value,
+                posEncoding: document.getElementById('posEncoding').value,
+                nx1: document.getElementById('nx1').value,
+                nx2: document.getElementById('nx2').value
+            };
+
+            // Output Probabilities 标签
+            const topLabel = document.createElement('div');
+            topLabel.className = 'label';
+            topLabel.style.left = '300px';
+            topLabel.style.top = '15px';
+            topLabel.textContent = v.topLabel;
+            diagram.appendChild(topLabel);
+
+            // Softmax & Linear
+            diagram.appendChild(createBox(v.softmax, 330, 55, 140, 35, 'softmax'));
+            diagram.appendChild(createBox(v.linear, 330, 110, 140, 35, 'linear'));
+
+            // 右侧decoder块轮廓
+            const rightBlock = document.createElement('div');
+            rightBlock.className = 'block-outline';
+            rightBlock.style.left = '315px';
+            rightBlock.style.top = '165px';
+            rightBlock.style.width = '280px';
+            rightBlock.style.height = '405px';
+            diagram.appendChild(rightBlock);
+
+            // 右侧decoder组件
+            diagram.appendChild(createBox(v.addNorm1, 330, 180, 140, 35, 'add-norm'));
+            diagram.appendChild(createBox(v.feedForward1, 330, 235, 140, 55, 'feedforward'));
+            diagram.appendChild(createBox(v.addNorm2, 330, 310, 140, 35, 'add-norm'));
+            diagram.appendChild(createBox(v.attention1, 330, 365, 140, 55, 'attention'));
+            diagram.appendChild(createBox(v.addNorm3, 330, 440, 140, 35, 'add-norm'));
+            diagram.appendChild(createBox(v.maskedAttention, 330, 495, 140, 55, 'attention'));
+
+            // 左侧encoder块轮廓
+            const leftBlock = document.createElement('div');
+            leftBlock.className = 'block-outline';
+            leftBlock.style.left = '90px';
+            leftBlock.style.top = '310px';
+            leftBlock.style.width = '230px';
+            leftBlock.style.height = '265px';
+            diagram.appendChild(leftBlock);
+
+            // 左侧encoder组件
+            diagram.appendChild(createBox(v.addNorm4, 105, 325, 140, 35, 'add-norm'));
+            diagram.appendChild(createBox(v.feedForward2, 105, 380, 140, 55, 'feedforward'));
+            diagram.appendChild(createBox(v.addNorm5, 105, 455, 140, 35, 'add-norm'));
+            diagram.appendChild(createBox(v.attention2, 105, 510, 140, 55, 'attention'));
+
+            // Embeddings
+            diagram.appendChild(createBox(v.inputEmbed, 105, 625, 140, 50, 'embedding'));
+            diagram.appendChild(createBox(v.outputEmbed, 330, 625, 140, 50, 'embedding'));
+
+            // N× 标签
+            const nx1Label = document.createElement('div');
+            nx1Label.className = 'nx-label';
+            nx1Label.style.left = '30px';
+            nx1Label.style.top = '430px';
+            nx1Label.textContent = v.nx1;
+            diagram.appendChild(nx1Label);
+
+            const nx2Label = document.createElement('div');
+            nx2Label.className = 'nx-label';
+            nx2Label.style.left = '645px';
+            nx2Label.style.top = '365px';
+            nx2Label.textContent = v.nx2;
+            diagram.appendChild(nx2Label);
+
+            // Inputs/Outputs 标签
+            const inputsLabel = document.createElement('div');
+            inputsLabel.className = 'label';
+            inputsLabel.style.left = '145px';
+            inputsLabel.style.top = '700px';
+            inputsLabel.textContent = v.inputs;
+            diagram.appendChild(inputsLabel);
+
+            const outputsLabel = document.createElement('div');
+            outputsLabel.className = 'label';
+            outputsLabel.style.left = '355px';
+            outputsLabel.style.top = '700px';
+            outputsLabel.textContent = v.outputs;
+            diagram.appendChild(outputsLabel);
+
+            const outputsSubLabel = document.createElement('div');
+            outputsSubLabel.className = 'small-label';
+            outputsSubLabel.style.left = '340px';
+            outputsSubLabel.style.top = '720px';
+            outputsSubLabel.textContent = v.outputsSub;
+            diagram.appendChild(outputsSubLabel);
+
+            // Positional Encoding (左)
+            const posEnc1 = document.createElement('div');
+            posEnc1.className = 'pos-encoding';
+            posEnc1.style.left = '15px';
+            posEnc1.style.top = '590px';
+            posEnc1.innerHTML = `
+                <div class="pos-circle">⟲</div>
+                <div style="text-align: center; line-height: 1.1; max-width: 70px;">${v.posEncoding.replace(' ', '<br>')}</div>
+            `;
+            diagram.appendChild(posEnc1);
+
+            // Positional Encoding (右)
+            const posEnc2 = document.createElement('div');
+            posEnc2.className = 'pos-encoding';
+            posEnc2.style.left = '490px';
+            posEnc2.style.top = '590px';
+            posEnc2.innerHTML = `
+                <div class="pos-circle">⟲</div>
+                <div style="text-align: center; line-height: 1.1; max-width: 70px;">${v.posEncoding.replace(' ', '<br>')}</div>
+            `;
+            diagram.appendChild(posEnc2);
+
+            // 加号
+            const plus1 = document.createElement('div');
+            plus1.className = 'plus-symbol';
+            plus1.style.left = '222px';
+            plus1.style.top = '595px';
+            plus1.textContent = '⊕';
+            diagram.appendChild(plus1);
+
+            const plus2 = document.createElement('div');
+            plus2.className = 'plus-symbol';
+            plus2.style.left = '462px';
+            plus2.style.top = '595px';
+            plus2.textContent = '⊕';
+            diagram.appendChild(plus2);
+
+            // ========== 绘制箭头 ==========
+            
+            // 主干箭头 - 右侧
+            drawArrow(400, 695, 400, 675);  // Outputs to embedding
+            drawArrow(400, 625, 400, 550);  // Embedding to masked attention
+            drawArrow(400, 495, 400, 475);  // Masked attention to Add&Norm
+            drawArrow(400, 440, 400, 420);  // Add&Norm to Attention
+            drawArrow(400, 365, 400, 345);  // Attention to Add&Norm
+            drawArrow(400, 310, 400, 290);  // Add&Norm to Feed Forward
+            drawArrow(400, 235, 400, 215);  // Feed Forward to Add&Norm
+            drawArrow(400, 180, 400, 145);  // Add&Norm to Linear
+            drawArrow(400, 110, 400, 90);   // Linear to Softmax
+            drawArrow(400, 55, 400, 35);    // Softmax to Output Probabilities
+
+            // 主干箭头 - 左侧
+            drawArrow(175, 695, 175, 675);  // Inputs to embedding
+            drawArrow(175, 625, 175, 565);  // Embedding to attention
+            drawArrow(175, 510, 175, 490);  // Attention to Add&Norm
+            drawArrow(175, 455, 175, 435);  // Add&Norm to Feed Forward
+            drawArrow(175, 380, 175, 360);  // Feed Forward to Add&Norm
+            drawArrow(175, 325, 175, 275);  // Add&Norm exit
+
+            // 交叉注意力 - 从encoder到decoder
+            drawArrow(245, 392, 330, 392);
+
+            // 残差连接 - 右侧Add & Norm的循环箭头（加粗路径，避开主干）
+            // Add & Norm 1 (顶部) - 从右侧出，向右，向下，向左进入Feed Forward
+            drawPath(`M 470 197 L 600 197 L 600 262 L 476 262`, true);
+            
+            // Add & Norm 2 (中部) - 从右侧出，向右，向下，向左进入Multi-Head Attention
+            drawPath(`M 470 327 L 600 327 L 600 392 L 476 392`, true);
+            
+            // Add & Norm 3 (底部) - 从右侧出，向右，向下，向左进入Masked Multi-Head Attention
+            drawPath(`M 470 457 L 600 457 L 600 522 L 476 522`, true);
+
+            // 残差连接 - 左侧Add & Norm的循环箭头（避开主干）
+            // Add & Norm 4 (顶部) - 从右侧出，向右，向下，向左进入Feed Forward
+            drawPath(`M 245 342 L 315 342 L 315 407 L 251 407`, true);
+            
+            // Add & Norm 5 (底部) - 从右侧出，向右，向下，向左进入Multi-Head Attention
+            drawPath(`M 245 472 L 315 472 L 315 537 L 251 537`, true);
+
+            // Multi-Head Attention 反馈箭头 - 左侧encoder
+            // 底部3个进入箭头（向上，间距更大）
+            drawArrow(155, 590, 155, 565);
+            drawArrow(175, 590, 175, 565);
+            drawArrow(195, 590, 195, 565);
+            // 左侧循环箭头（向外）
+            drawPath(`M 105 540 L 75 540 L 75 520 L 105 520`, false);
+
+            // Multi-Head Attention 反馈箭头 - 右侧decoder (中间)
+            // 底部3个进入箭头（间距加大）
+            drawArrow(375, 445, 375, 420);
+            drawArrow(400, 445, 400, 420);
+            drawArrow(425, 445, 425, 420);
+            // 左侧循环箭头（向外，避开交叉注意力箭头）
+            drawPath(`M 330 395 L 295 395 L 295 375 L 330 375`, false);
+
+            // Masked Multi-Head Attention 反馈箭头 - 右侧decoder
+            // 底部3个进入箭头（间距加大）
+            drawArrow(375, 575, 375, 550);
+            drawArrow(400, 575, 400, 550);
+            drawArrow(425, 575, 425, 550);
+            // 左侧循环箭头（向外）
+            drawPath(`M 330 525 L 295 525 L 295 505 L 330 505`, false);
+
+            diagram.appendChild(svg);
+        }
+
+        function updateDiagram() {
+            createDiagram();
+        }
+
+        function exportPNG() {
+            const diagram = document.getElementById('diagram');
+            html2canvas(diagram, {
+                backgroundColor: '#ffffff',
+                scale: 3
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'transformer-diagram.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+
+        function exportJPEG() {
+            const diagram = document.getElementById('diagram');
+            html2canvas(diagram, {
+                backgroundColor: '#ffffff',
+                scale: 3
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'transformer-diagram.jpg';
+                link.href = canvas.toDataURL('image/jpeg', 0.98);
+                link.click();
+            });
+        }
+
+        function exportPDF() {
+            const diagram = document.getElementById('diagram');
+            html2canvas(diagram, {
+                backgroundColor: '#ffffff',
+                scale: 3
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+                
+                const imgWidth = 180;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                pdf.addImage(imgData, 'PNG', 15, 15, imgWidth, imgHeight);
+                pdf.save('transformer-diagram.pdf');
+            });
+        }
+
+        function exportSVG() {
+            const diagram = document.getElementById('diagram');
+            const clonedDiagram = diagram.cloneNode(true);
+            
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+            svg.setAttribute('width', '800');
+            svg.setAttribute('height', '1000');
+            
+            const foreignObject = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
+            foreignObject.setAttribute('width', '800');
+            foreignObject.setAttribute('height', '1000');
+            
+            const style = document.createElement('style');
+            style.textContent = Array.from(document.styleSheets[0].cssRules)
+                .map(rule => rule.cssText)
+                .join('\n');
+            clonedDiagram.insertBefore(style, clonedDiagram.firstChild);
+            
+            foreignObject.appendChild(clonedDiagram);
+            svg.appendChild(foreignObject);
+            
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.download = 'transformer-diagram.svg';
+            link.href = url;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+        }
+
+        window.addEventListener('load', createDiagram);
+    </script>
+    <!-- 页脚 -->
+    <footer class="footer">
+    由 Karcen Zheng 制作，<a href="https://karcen.github.io/zhengjiacheng.github.io/" target="_blank">联系我</a>
+	</footer>
+</body>
+
+</html>
