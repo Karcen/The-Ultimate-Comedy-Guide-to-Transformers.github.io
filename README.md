@@ -1,5 +1,8 @@
 # 🎭 Transformer终极搞笑指南
 ## The Ultimate Comedy Guide to Transformers
+<img width="2560" height="1440" alt="5ed61a2beffd87db0e2f7b24aef835d9" src="https://github.com/user-attachments/assets/a51295e0-d777-4052-a059-a878a43848ef" />
+<img width="2557" height="1439" alt="d869faf2fbd387413cf5b8137523773c" src="https://github.com/user-attachments/assets/56bc2382-37c1-47a9-a9cd-aff647150c8d" />
+
 
 ---
 
